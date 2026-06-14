@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: appthree
+  kafka:
+    template:
+      observation-enabled: true
+    listener:
+      observation-enabled: true
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+logging:
+  pattern:
+    correlation: "[%X{traceId:-},%X{spanId:-}]"
+debug: false
+
+server:
+  port: 8082
