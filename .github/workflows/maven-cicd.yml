@@ -2,9 +2,9 @@ name: Spring Boot CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "devonly" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "devonly" ]
 
 jobs:
   # --- STAGE 1: TEST & VERIFY ---
