@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "devonly" ]
 
+permissions:
+  contents: read
+  packages: write  # CRITICAL: Allows pushing to GitHub Packages and GHCR
+
 jobs:
   # --- STAGE 1: TEST, VERIFY & QUALITY SCAN ---
   test-and-verify:
@@ -15,7 +19,7 @@ jobs:
       - name: Checkout Code (Full Git History for Sonar)
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # CRITICAL: Fixes Sonar tracking accuracy
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -31,7 +35,6 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      # FIXED: Combined test running and Sonar scan into a single clean pass
       - name: Run Tests and Sonar Analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -42,7 +45,7 @@ jobs:
             -Dsonar.organization=luckyacode \
             -Dsonar.host.url=https://sonarcloud.io
 
-  # --- STAGE 2: BUILD & PUSH DOCKER IMAGE ---
+  # --- STAGE 2: BUILD & PUSH ARTIFACTS (JAR & DOCKER IMAGE) ---
   build-and-ship:
     needs: test-and-verify
     runs-on: ubuntu-latest
@@ -52,17 +55,54 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # --- STEP A: PUBLISH THE JAR PACKAGE ---
+      - name: Generate Dynamic Maven Settings for Authentication
+        run: |
+          mkdir -p .github/workflows
+          cat <<EOF > .github/workflows/settings.xml
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+              <servers>
+                  <server>
+                      <id>github</id>
+                      <username>\${env.GITHUB_ACTOR}</username>
+                      <password>\${env.GITHUB_TOKEN}</password>
+                  </server>
+              </servers>
+          </settings>
+          EOF
+
+      - name: Publish JAR to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn -B clean deploy \
+            -Dmaven.test.skip=true \
+            --settings .github/workflows/settings.xml
+
+      # --- STEP B: PUBLISH DOCKER IMAGE TO GHCR.IO ---
+      - name: Log in to GitHub Container Registry (ghcr.io)
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Downcase Repository Name for Docker Tagging Compliance
+        run: |
+          echo "IMAGE_NAME=$(echo 'ghcr.io/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Extract Metadata (Tagging)
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKER_USERNAME }}/appthree
+          images: ${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
             type=sha,format=short
