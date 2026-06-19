@@ -33,7 +33,7 @@
 		<repository>
 			<id>github</id>
 			<name>GitHub Packages</name>
-			<url>https://github.com/luckyacode/appthree.git</url>
+			<url>git@github.com:luckyacode/appthree.git</url>
 		</repository>
 	</distributionManagement>
 	<dependencies>
