@@ -5,7 +5,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 # Build the application and skip tests (since the CI pipeline will run them separately)
-RUN mvc clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # Stage 2: Run the application using a slim JRE runtime
 FROM eclipse-temurin:21-jre-alpine
