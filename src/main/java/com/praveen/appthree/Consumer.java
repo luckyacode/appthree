@@ -13,10 +13,19 @@ public class Consumer {
 
     @KafkaListener(topics = "pt-topic",groupId = "mygroupid")
     public void consume( String string){
+
         log.info("consuming msg : {}",string);
         System.out.println();
         System.out.println("consuming : "+objectMapper.readValue(string,Order.class));
-//        Order response = objectMapper.readValue(string, Order.class);
-//        log.info("response is : {}",response);
     }
+
+
+//    @KafkaListener(topics = "pt-topic",groupId = "mygroupid")
+//    public void consume( String string){
+//        log.info("consuming msg : {}",string);
+//        System.out.println();
+//        System.out.println("consuming : "+objectMapper.readValue(string,Order.class));
+////        Order response = objectMapper.readValue(string, Order.class);
+////        log.info("response is : {}",response);
+//    }
 }
