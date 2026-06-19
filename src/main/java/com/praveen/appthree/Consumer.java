@@ -12,9 +12,11 @@ public class Consumer {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @KafkaListener(topics = "pt-topic",groupId = "mygroupid")
-    public void consume(@Payload String string){
+    public void consume( String string){
         log.info("consuming msg : {}",string);
-        ErrorResponse response = objectMapper.readValue(string, ErrorResponse.class);
-        log.info("response is : {}",response);
+        System.out.println();
+        System.out.println("consuming : "+objectMapper.readValue(string,Order.class));
+//        Order response = objectMapper.readValue(string, Order.class);
+//        log.info("response is : {}",response);
     }
 }

@@ -34,8 +34,8 @@ public class MyController {
     @GetMapping("/")
     public String call2() {
         log.info("New Received request in 'call2' endpoint");
-        ErrorResponse errorResponse = ErrorResponse.builder().message("praveen did "+ UUID.randomUUID().toString().replace("-","").substring(0,5)).timestamp(LocalDateTime.now().toString()).build();
-        String json = objectMapper.writeValueAsString(errorResponse);
+        Order order = Order.builder().message("praveen did "+ UUID.randomUUID().toString().replace("-","").substring(0,5)).timestamp(LocalDateTime.now().toString()).build();
+        String json = objectMapper.writeValueAsString(order);
         log.info("new send to appthree : response {}",json);
         kafkaTemplate.send("pt-topic2",json);
         return "hello app2";

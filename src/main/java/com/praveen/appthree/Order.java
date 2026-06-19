@@ -2,13 +2,11 @@ package com.praveen.appthree;
 
 import lombok.*;
 
-@Getter
-@Setter
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErrorResponse {
+public class Order {
     private String message;
     private String timestamp;
 }
