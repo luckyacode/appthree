@@ -23,7 +23,7 @@ public class MyController {
 
     @GetMapping("/")
     public String call2() {
-        log.info("New Received request in 'call2' endpoint");
+        log.info("New Received request in 'call2' endpointok");
         return "hello app2";
     }
 }
