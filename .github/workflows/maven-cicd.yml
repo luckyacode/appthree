@@ -29,7 +29,7 @@ jobs:
   build-and-ship:
     needs: test-and-verify # Safeguard: Only build if tests pass successfully
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/devonly' && github.event_name == 'push'
 
     steps:
       - name: Checkout Code
